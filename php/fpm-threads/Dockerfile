@@ -19,7 +19,13 @@ RUN apk add --no-cache --virtual .phpize-deps \
 # persistent / runtime deps
 RUN apk add --no-cache --virtual .persistent-deps \
 		ca-certificates \
-		curl
+		curl \
+		libssl1.0 \
+		libxml2-dev \
+		libxml2 \
+		libpng-dev \
+		libmcrypt-dev \
+		zlib
 
 # ensure www-data user exists
 RUN set -x \
@@ -42,7 +48,6 @@ RUN set -xe \
 		curl-dev \
 		gnupg \
 		libedit-dev \
-		libxml2-dev \
 		openssl-dev \
 		sqlite-dev \
 	&& curl -fSL "http://php.net/get/$PHP_FILENAME/from/this/mirror" -o "$PHP_FILENAME" \
@@ -121,46 +126,46 @@ RUN set -ex \
 		echo 'listen = [::]:9000'; \
 	} | tee php-fpm.d/zz-docker.conf
 
-#RUN extensions=" \
-#        gd \
-#        mysqli \
-#        soap \
-#        mcrypt \
-#        mbstring \
-#    "; \
-#    apk update && apk add --no-cache --virtual .extension-deps \
-#		rsync \
-#    && docker-php-ext-install $extensions \
-#    && apk del .extension-deps \
+RUN extensions=" \
+        gd \
+        mysqli \
+        soap \
+        mcrypt \
+        mbstring \
+    "; \
+    apk update && apk add --no-cache --virtual .extension-deps \
+		rsync \
+    && docker-php-ext-install $extensions \
+    && apk del .extension-deps \
 
-#ENV peclDeps=" \
-#		libmemcached-dev \
-#	"
-#RUN apk update && apk add --no-cache --virtual .pecl-deps \
-#	libmemcached-dev \
+RUN peclDeps=" \
+		libmemcached-dev \
+	"; \
+	apk update && apk add --no-cache --virtual .pecl-deps \
+	libmemcached-dev \
 #	&& pecl install redis && echo extension=redis.so > $PHP_INI_DIR/conf.d/ext-redis.ini \
 #	&& pecl install memcached && echo extension=memcached.so > $PHP_INI_DIR/conf.d/ext-memcached.ini \
 #	&& pecl install memcache && echo extension=memcache.so > $PHP_INI_DIR/conf.d/ext-memcache.ini \
-#	&& pecl install apcu && echo extension=apcu.so > $PHP_INI_DIR/conf.d/ext-apcu.ini \
-#	&& apk del .pecl-deps
+	&& pecl install apcu && echo extension=apcu.so > $PHP_INI_DIR/conf.d/ext-apcu.ini \
+	&& apk del .pecl-deps
 
-#RUN apk update && apk add --no-cache --virtual .memcached-deps \
-#		git \
-#		libmemcached-dev \
-#	&& git clone https://github.com/php-memcached-dev/php-memcached.git && cd php-memcached \
-#	&& git checkout php7 \
-#	&& phpize \
-#	&& ./configure --disable-memcached-sasl \
-#	&& make && make install \
-#	&& echo extension=memcached.so > $PHP_INI_DIR/conf.d/ext-memcached.ini \
-#	&& curl -fSL "https://github.com/websupport-sk/pecl-memcache/archive/fdbd46bbc6f53ed6e024521895e142cbfc9b3340/memcache-3.0.9-fdbd46b.tar.gz" -o "memcache.tar.gz" \
-#	&& mkdir -p /usr/src/php-memcache \
-#    && tar -xf "memcache.tar.gz" -C /usr/src/php-memcache --strip-components=1 \
-#    && cd /usr/src/php-memcache && phpize \
-#    && ./configure \
-#    && make && make install \
-#    && echo extension=memcache.so > $PHP_INI_DIR/conf.d/ext-memcache.ini \
-#	&& apk del .memcached-deps
+RUN apk update && apk add --no-cache --virtual .memcached-deps \
+		git \
+		libmemcached-dev \
+	&& git clone https://github.com/php-memcached-dev/php-memcached.git && cd php-memcached \
+	&& git checkout php7 \
+	&& phpize \
+	&& ./configure --disable-memcached-sasl \
+	&& make && make install \
+	&& echo extension=memcached.so > $PHP_INI_DIR/conf.d/ext-memcached.ini \
+	&& curl -fSL "https://github.com/websupport-sk/pecl-memcache/archive/fdbd46bbc6f53ed6e024521895e142cbfc9b3340/memcache-3.0.9-fdbd46b.tar.gz" -o "memcache.tar.gz" \
+	&& mkdir -p /usr/src/php-memcache \
+    && tar -xf "memcache.tar.gz" -C /usr/src/php-memcache --strip-components=1 \
+    && cd /usr/src/php-memcache && phpize \
+    && ./configure \
+    && make && make install \
+    && echo extension=memcache.so > $PHP_INI_DIR/conf.d/ext-memcache.ini \
+	&& apk del .memcached-deps
 
 MAINTAINER Eric Mann
 
