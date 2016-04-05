@@ -174,5 +174,5 @@ MAINTAINER Eric Mann
 
 WORKDIR /var/www/html
 
-EXPOSE 9000
+EXPOSE 9070
 CMD ["php-fpm"]
