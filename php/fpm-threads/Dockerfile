@@ -158,13 +158,6 @@ RUN apk update && apk add --no-cache --virtual .memcached-deps \
 	&& ./configure --disable-memcached-sasl \
 	&& make && make install \
 	&& echo extension=memcached.so > $PHP_INI_DIR/conf.d/ext-memcached.ini \
-	&& curl -fSL "https://github.com/websupport-sk/pecl-memcache/archive/fdbd46bbc6f53ed6e024521895e142cbfc9b3340/memcache-3.0.9-fdbd46b.tar.gz" -o "memcache.tar.gz" \
-	&& mkdir -p /usr/src/php-memcache \
-    && tar -xf "memcache.tar.gz" -C /usr/src/php-memcache --strip-components=1 \
-    && cd /usr/src/php-memcache && phpize \
-    && ./configure \
-    && make && make install \
-    && echo extension=memcache.so > $PHP_INI_DIR/conf.d/ext-memcache.ini \
 	&& apk del .memcached-deps
 
 MAINTAINER Eric Mann
