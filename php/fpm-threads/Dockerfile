@@ -121,10 +121,6 @@ RUN set -ex \
 		echo 'listen = [::]:9000'; \
 	} | tee php-fpm.d/zz-docker.conf
 
-ENV extensionDeps=" \
-        rsync \
-	"
-
 RUN extensions=" \
         gd \
         mysqli \
@@ -132,28 +128,25 @@ RUN extensions=" \
         mcrypt \
         mbstring \
     "; \
-    apt-get update && apt-get install -y --no-install-recommends $extensionDeps \
+    apk update && apk add --no-cache --virtual .extension-deps \
+		rsync \
     && docker-php-ext-install $extensions \
-    && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false -o APT::AutoRemove::SuggestsImportant=false $extensionDeps \
-    && apt-get autoremove
+    && apk del .extension-deps \
 
 ENV peclDeps=" \
 		libmemcached-dev \
 	"
-RUN apt-get update && apt-get install -y --no-install-recommends $peclDeps \
+RUN apk update && apk add --no-cache --virtual .pecl-deps \
+	libmemcached-dev \
 #	&& pecl install redis && echo extension=redis.so > $PHP_INI_DIR/conf.d/ext-redis.ini \
 #	&& pecl install memcached && echo extension=memcached.so > $PHP_INI_DIR/conf.d/ext-memcached.ini \
 #	&& pecl install memcache && echo extension=memcache.so > $PHP_INI_DIR/conf.d/ext-memcache.ini \
 	&& pecl install apcu && echo extension=apcu.so > $PHP_INI_DIR/conf.d/ext-apcu.ini \
-	&& apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false -o APT::AutoRemove::SuggestsImportant=false $peclDeps \
-	&& apt-get autoremove
+	&& apk del .pecl-deps
 
-ENV memcachedDeps=" \
+RUN apk update && apk add --no-cache --virtual .memcached-deps \
 		git \
 		libmemcached-dev \
-	"
-
-RUN apt-get update && apt-get install -y --no-install-recommends $memcachedDeps \
 	&& git clone https://github.com/php-memcached-dev/php-memcached.git && cd php-memcached \
 	&& git checkout php7 \
 	&& phpize \
@@ -167,8 +160,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends $memcachedDeps 
     && ./configure \
     && make && make install \
     && echo extension=memcache.so > $PHP_INI_DIR/conf.d/ext-memcache.ini \
-	&& apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false -o APT::AutoRemove::SuggestsImportant=false $memcachedDeps \
-	&& apt-get autoremove
+	&& apk del .memcached-deps
 
 MAINTAINER Eric Mann
 
