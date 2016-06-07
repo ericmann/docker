@@ -36,7 +36,7 @@ RUN set -x \
 ENV PHP_INI_DIR /usr/local/etc/php
 RUN mkdir -p $PHP_INI_DIR/conf.d
 
-ENV PHP_EXTRA_CONFIGURE_ARGS --enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data --enable-maintainer-zts --enable-pthreads
+ENV PHP_EXTRA_CONFIGURE_ARGS --enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data --enable-maintainer-zts --enable-pthreads --enable-pcntl --enable-sysvmsg
 
 ENV GPG_KEYS 1A4E8B7277C42E53DBA9C7B9BCAA30EA9C0D5763 6E4F6AB321FDC07F2C332E3AC2BF0BC433CFC8B3
 
@@ -136,9 +136,10 @@ RUN extensions=" \
     apk update && apk add --no-cache --virtual .extension-deps \
 		rsync \
     && docker-php-ext-install $extensions \
-    && apk del .extension-deps \
+    && apk del .extension-deps
 
-RUN pecl install apcu && echo extension=apcu.so > $PHP_INI_DIR/conf.d/ext-apcu.ini
+RUN pecl install apcu && echo extension=apcu.so > $PHP_INI_DIR/conf.d/ext-apcu.ini \
+	&& pecl install pthreads && echo extension=pthreads.so > $PHP_INI_DIR/conf.d/ext-pthreads.ini
 
 MAINTAINER Eric Mann
 
