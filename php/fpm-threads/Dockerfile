@@ -38,10 +38,10 @@ RUN mkdir -p $PHP_INI_DIR/conf.d
 
 ENV PHP_EXTRA_CONFIGURE_ARGS --enable-fpm --with-fpm-user=www-data --with-fpm-group=www-data --enable-maintainer-zts --enable-pthreads
 
-ENV GPG_KEYS 1A4E8B7277C42E53DBA9C7B9BCAA30EA9C0D5763
+ENV GPG_KEYS 1A4E8B7277C42E53DBA9C7B9BCAA30EA9C0D5763 6E4F6AB321FDC07F2C332E3AC2BF0BC433CFC8B3
 
-ENV PHP_VERSION 7.0.5
-ENV PHP_FILENAME php-7.0.5.tar.xz
+ENV PHP_VERSION 7.0.7
+ENV PHP_FILENAME php-7.0.7.tar.xz
 
 RUN set -xe \
 	&& apk add --no-cache --virtual .build-deps \
@@ -138,27 +138,7 @@ RUN extensions=" \
     && docker-php-ext-install $extensions \
     && apk del .extension-deps \
 
-RUN peclDeps=" \
-		libmemcached-dev \
-	"; \
-	apk update && apk add --no-cache --virtual .pecl-deps \
-	libmemcached-dev \
-#	&& pecl install redis && echo extension=redis.so > $PHP_INI_DIR/conf.d/ext-redis.ini \
-#	&& pecl install memcached && echo extension=memcached.so > $PHP_INI_DIR/conf.d/ext-memcached.ini \
-#	&& pecl install memcache && echo extension=memcache.so > $PHP_INI_DIR/conf.d/ext-memcache.ini \
-	&& pecl install apcu && echo extension=apcu.so > $PHP_INI_DIR/conf.d/ext-apcu.ini \
-	&& apk del .pecl-deps
-
-RUN apk update && apk add --no-cache --virtual .memcached-deps \
-		git \
-		libmemcached-dev \
-	&& git clone https://github.com/php-memcached-dev/php-memcached.git && cd php-memcached \
-	&& git checkout php7 \
-	&& phpize \
-	&& ./configure --disable-memcached-sasl \
-	&& make && make install \
-	&& echo extension=memcached.so > $PHP_INI_DIR/conf.d/ext-memcached.ini \
-	&& apk del .memcached-deps
+RUN pecl install apcu && echo extension=apcu.so > $PHP_INI_DIR/conf.d/ext-apcu.ini
 
 MAINTAINER Eric Mann
 
